@@ -6,8 +6,8 @@ metadata:
   {
     "openclaw":
       {
-        "requires": { "env": ["QCC_API_KEY"] },
-        "primaryEnv": "QCC_API_KEY",
+        "requires": { "env": ["QCC_AGENT_API_KEY"] },
+        "primaryEnv": "QCC_AGENT_API_KEY",
         "category": "enterprise",
         "emoji": "🔍"
       }
