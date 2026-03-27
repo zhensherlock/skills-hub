@@ -5,7 +5,11 @@
 
 set -e
 
-echo "🔍 企业快速风险排查 Skill 安装程序"
+# 版本号定义
+SKILL_VERSION="v1.0.0"
+
+echo "🚀 企业快速风险排查 Skill 安装程序"
+echo "📦 当前版本: $SKILL_VERSION"
 echo "=================================="
 echo ""
 
@@ -19,16 +23,21 @@ fi
 echo "✅ mcporter 已安装"
 echo ""
 
-# 获取 API Key
-echo "📋 请提供企查查 API Key："
-echo "   访问 https://agent.qcc.com 登录/注册获取"
-echo ""
-read -p "输入 API Key: " QCC_AGENT_API_KEY
-
+# 检查 TENCENT_MEETING_TOKEN 环境变量
+echo "🔍 检查企查查 API Key 环境变量..."
 if [ -z "$QCC_AGENT_API_KEY" ]; then
-    echo "❌ API Key 不能为空"
+    echo "❌ 错误：未检测到 QCC_AGENT_API_KEY 环境变量！"
+    echo "请先执行以下命令设置环境变量（替换为真实 API Key）："
+    echo "  export QCC_AGENT_API_KEY=\"your_actual_api_key_here\""
+    echo "或在执行脚本时直接传入："
+    echo "  QCC_AGENT_API_KEY=\"your_actual_api_key_here\" bash this_script.sh"
+    echo ""
+    echo "📋 获取 API Key：访问 https://agent.qcc.com 登录/注册获取"
     exit 1
+else
+    echo "✅ QCC_AGENT_API_KEY 环境变量已配置"
 fi
+echo ""
 
 # 创建或更新环境变量文件
 ENV_FILE="$HOME/.qcc-agent/.env"
@@ -36,9 +45,6 @@ mkdir -p "$(dirname "$ENV_FILE")"
 
 echo "QCC_AGENT_API_KEY=$QCC_AGENT_API_KEY" > "$ENV_FILE"
 echo "✅ API Key 已保存到 $ENV_FILE"
-echo ""
-echo "⚠️  请执行以下命令将 API Key 添加到环境变量："
-echo "   export QCC_AGENT_API_KEY=$QCC_AGENT_API_KEY"
 echo ""
 
 # 安装 MCP Server
