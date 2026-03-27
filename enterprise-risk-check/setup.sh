@@ -23,7 +23,7 @@ fi
 echo "✅ mcporter 已安装"
 echo ""
 
-# 检查 TENCENT_MEETING_TOKEN 环境变量
+# 检查 QCC_AGENT_API_KEY 环境变量
 echo "🔍 检查企查查 API Key 环境变量..."
 if [ -z "$QCC_AGENT_API_KEY" ]; then
     echo "❌ 错误：未检测到 QCC_AGENT_API_KEY 环境变量！"
