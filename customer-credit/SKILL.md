@@ -85,21 +85,21 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
 - `get_equity_pledge_info` (risk-server) — 股权出质（融资需求）
 - `get_guarantee_info` (risk-server) — 担保信息（或有负债）
 - `get_chattel_mortgage_info` (risk-server) — 动产抵押（资产受限）
-- `get_financing_records` (operation-server) — 融资历史（资金实力）
+- `get_financing_records` (operation-server) — 融资信息（资金实力）
 
 **经营风险：**
 - `get_business_exception` (risk-server) — 经营异常
 - `get_administrative_penalty` (risk-server) — 行政处罚
 
 **基础信息：**
-- `get_company_registration_info` (company-server) — 工商登记
+- `get_company_registration_info` (company-server) — 企业工商信息
 - `get_shareholder_info` (company-server) — 股东信息
 
 **决策点：** 如存在失信记录或大额被执行，建议收紧账期或要求预付款。
 
 **Tier 2 - 扩展查询（根据评估深度选择）：**
 - `get_credit_evaluation` (operation-server) — 信用评价（官方评级）
-- `get_annual_reports` (company-server) — 年报信息（资产/负债）
+- `get_annual_reports` (company-server) — 企业年报（资产/负债）
 - `get_case_filing_info` (risk-server) — 立案信息（诉讼情况）
 - `get_contact_info` (company-server) — 联系方式（经营地址核实）
 
@@ -271,7 +271,7 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
 
 ### 3. 经营实力工具
 
-#### `get_financing_records` — 融资历史
+#### `get_financing_records` — 融资信息
 
 **用途**：查询企业融资记录
 
@@ -287,7 +287,7 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
 
 ---
 
-#### `get_company_registration_info` — 工商登记
+#### `get_company_registration_info` — 企业工商信息
 
 **参数**: `searchKey` - 企业名称或统一社会信用代码
 
@@ -367,7 +367,7 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
 
 ## 四、经营实力分析
 
-### 4.1 融资历史
+### 4.1 融资信息
 | 轮次 | 金额 | 日期 | 投资方 |
 |-----|------|------|-------|
 | A 轮 | XX 万 | XXXX | XX 资本 |

@@ -1,6 +1,6 @@
 ---
-name: enterprise-risk-check
-description: "快速企业风险排查专用技能。当用户需要快速了解企业风险状况、判断合作可行性、供应商/客户准入审查时使用此技能。⚠️ 使用前必须通过 use_skill 加载本技能，且需要用户提供企查查 API Key。专注 8 个核心风险指标，5 分钟输出风险报告。"
+name: job-company-check
+description: "求职公司调查专用技能。当用户需要面试前了解目标公司、求职前评估公司风险、入职前核实公司情况时使用此技能。⚠️ 使用前必须通过 use_skill 加载本技能，且需要用户提供企查查 API Key。专注存续状态、经营风险、劳动纠纷、规模实力，10 分钟输出求职安全报告。"
 homepage: https://agent.qcc.com/
 metadata:
   {
@@ -9,14 +9,14 @@ metadata:
         "requires": { "env": ["QCC_AGENT_API_KEY"] },
         "primaryEnv": "QCC_AGENT_API_KEY",
         "category": "enterprise",
-        "emoji": "🔍"
+        "emoji": "💼"
       }
   }
 ---
 
-# 企业快速风险排查
+# 求职公司调查
 
-企查查 MCP 服务 - 专注风险识别
+企查查 MCP 服务 - 专注求职安全与公司评估
 
 ## ⚙️ 配置要求
 
@@ -41,7 +41,7 @@ bash setup.sh
 ### 验证配置
 
 ```bash
-mcporter list | grep enterprise-risk-check
+mcporter list | grep -E "(company-server|risk-server|operation-server)"
 ```
 
 ---
@@ -56,7 +56,7 @@ mcporter list | grep enterprise-risk-check
 在调用任何工具前，**必须**先确认 MCP server 已正确配置：
 
 ```bash
-mcporter list | grep -E "qcc-(company|risk|ipr|operation)"
+mcporter list | grep -E "(company-server|risk-server|operation-server)"
 ```
 
 如未找到，引导用户运行 `bash setup.sh` 完成配置。
@@ -73,64 +73,71 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
 
 ### 3. 查询策略（分级查询）
 
-**Tier 1 - 必查项（8 个核心工具，所有尽调必须执行）：**
+**Tier 1 - 必查项（10 个核心工具）：**
 
 **风险优先查询（最先执行，发现红色风险可提前终止）：**
 - `get_dishonest_info` (risk-server) — 失信信息（一票否决）
-- `get_judgment_debtor_info` (risk-server) — 被执行人
-- `get_serious_violation` (risk-server) — 严重违法
-- `get_business_exception` (risk-server) — 经营异常
-- `get_administrative_penalty` (risk-server) — 行政处罚
+- `get_business_exception` (risk-server) — 经营异常（经营异常）
+- `get_serious_violation` (risk-server) — 严重违法（重大违规）
+- `get_service_announcement` (risk-server) — 劳动仲裁（劳动纠纷）
+- `get_administrative_penalty` (risk-server) — 行政处罚（合规风险）
 
 **基础信息查询（与风险查询并行执行）：**
-- `get_company_registration_info` (company-server) — 企业工商信息信息
-- `get_shareholder_info` (company-server) — 股东信息
-- `get_key_personnel` (company-server) — 主要人员
+- `get_company_registration_info` (company-server) — 企业工商信息（存续状态）
+- `get_annual_reports` (company-server) — 企业年报（参保人数/规模）
+- `get_shareholder_info` (company-server) — 股东信息（股东背景）
+- `get_key_personnel` (company-server) — 主要人员（核心团队）
+- `get_company_profile` (company-server) — 企业简介（业务概况）
 
-**决策点：** 如发现红色风险（失信/严重违法/破产），立即向用户预警，询问是否继续深入调查。
+**决策点：** 如发现红色风险（失信/严重违法/经营异常），立即向用户预警，建议谨慎入职。
+
+**Tier 2 - 扩展查询（根据用户需求选择）：**
+- `get_financing_records` (operation-server) — 融资信息（发展潜力）
+- `get_news_sentiment` (operation-server) — 新闻舆情（负面新闻）
+- `get_recruitment_info` (operation-server) — 招聘信息（人才需求）
+- `get_honor_info` (operation-server) — 荣誉信息（企业声誉）
 
 ### 风险等级判定标准
 
-| 风险等级 | 判定标准 | 建议 |
-|---------|---------|------|
-| **红色风险 ⛔** | 失信被执行（有任何记录）、严重违法（有任何记录）、经营异常（地址失联/未移出）、吊销执照、限高、重大处罚（单笔≥50 万） | 一票否决，建议终止合作 |
-| **橙色风险 ⚠️** | 被执行人（涉案金额≥100 万）、经营异常（已移出）、行政处罚（2 年内≥3 次或单笔 10-50 万）、股权出质（≥30%）、大额担保、劳动仲裁≥5 件 | 谨慎合作，需重点评估 |
-| **黄色风险 ⚡** | 一般处罚（单笔<10 万且 2 年内仅 1 次）、少量诉讼、历史风险已解决 | 一般关注，了解情况即可 |
+| 风险等级 | 判定标准 | 求职建议 |
+|---------|---------|---------|
+| **红色风险 ⛔** | 失信被执行（有任何记录）、严重违法（有任何记录）、经营异常（地址失联/未移出）、吊销执照 | 高危，建议避免入职 |
+| **橙色风险 ⚠️** | 行政处罚（2 年内≥3 次或单笔≥10 万）、劳动仲裁（开庭公告≥5 件或送达公告≥3 件）、经营异常（已移出） | 谨慎，需进一步了解 |
+| **黄色风险 ⚡** | 少量诉讼、历史处罚（2 年前）、劳动仲裁<5 件 | 一般关注，可正常入职 |
 
 ### 工具判定逻辑
 
 #### get_dishonest_info 判定
 ```
 红色风险：失信信息[] 数组有任何记录
-判定依据：涉案金额 + 立案日期 + 发布日期（最近一次）
+重点关注：涉案金额、立案日期（最近一次）
 ```
 
 #### get_business_exception 判定
 ```
 红色风险：列入经营异常名录原因 包含"地址失联" 或 无移出日期
-橙色风险：列入经营异常名录原因 为"未年报" 且 有移出日期
-判定依据：列入日期（最近一次）+ 列入原因
+橙色风险：列入经营异常名录原因 为"未年报" 且有移出日期
+重点关注：列入日期（最近一次）、列入原因
 ```
 
 #### get_serious_violation 判定
 ```
 红色风险：严重违法信息[] 数组有任何记录
-判定依据：列入日期（最近一次）+ 列入原因
-```
-
-#### get_administrative_penalty 判定
-```
-红色风险：处罚金额≥500000 或 处罚单位包含"环保/应急/市场监督"且处罚结果包含"责令停产/吊销许可"
-橙色风险：处罚金额 100000-500000 或 2 年内处罚次数≥3 次
-黄色风险：处罚金额<100000 且 2 年内仅 1 次
-判定依据：处罚金额 + 处罚日期 + 处罚单位 + 处罚结果
+重点关注：列入日期（最近一次）、列入原因（拒不履行/规避执行等）
 ```
 
 #### get_service_announcement 判定
 ```
-橙色风险：开庭公告[] 数组长度≥5 或 送达公告[] 数组长度≥3
-红色风险：开庭公告[] 数组长度≥10 或 同一案件申请人≥10 人（群体性纠纷）
-判定依据：开庭公告数量 + 送达公告数量 + 申请人数量
+橙色风险：开庭公告[] 数组长度≥3 或 送达公告[] 数组长度≥2
+红色风险：开庭公告[] 数组长度≥10 或 同一案件申请人≥10 人（群体性劳动纠纷）
+重点关注：主案由（确认劳动关系/拖欠工资等）、开庭日期
+```
+
+#### get_administrative_penalty 判定
+```
+橙色风险：处罚金额≥100000 或 2 年内处罚次数≥3 次
+黄色风险：处罚金额<100000 且 2 年内仅 1 次
+重点关注：处罚金额、处罚日期、处罚单位、处罚结果
 ```
 
 ### 响应处理规范
@@ -145,23 +152,23 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
 
 ### 必须使用此技能的场景
 
-- 用户要求快速调查某家公司/企业
-- 合作前对合作伙伴进行风险排查
-- 供应商/客户准入审查
-- 投资前快速 screening
-- 求职前了解目标公司风险
-- 竞争对手风险对比
+- 面试前了解目标公司
+- 收到 Offer 后评估公司
+- 入职前核实公司情况
+- 跳槽前背景调查
+- 应届生求职公司筛选
+- 兼职/实习单位核实
 
 ### 触发关键词
 
-尽调、背调、调查、查公司、查企业、风险、靠谱吗、能不能合作、供应商审查、客户资信
+面试、求职、入职、Offer、公司怎么样、靠谱吗、要去这家公司、求职风险、公司调查、背调
 
 ### 不触发边界
 
-- 用户需要**文档编辑、表格处理**（非企业背景调查）
-- 用户进行**日程管理、日历安排**（非企业背景调查）
-- 用户进行**即时通讯、聊天消息**操作
-- 用户询问的是**其他平台数据**（非企查查数据源）
+- 用户需要**供应商审查**（应使用 supplier-audit 技能）
+- 用户需要**客户资信评估**（应使用 customer-credit 技能）
+- 用户需要**投资尽调**（应使用 investment-dd 技能）
+- 用户进行**文档编辑、日程管理**（非企业背景调查）
 
 ---
 
@@ -191,7 +198,8 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
 - 参保人数 - 参保人数
 - 分支机构参保人数 - 分支机构参保人数
 
-> ⚠️ **登记状态判断**：如返回"注销"、"吊销"、"清算"，直接列为红色风险
+> ⚠️ **登记状态判断**：如返回"注销"、"吊销"、"清算"，直接列为红色风险，不建议入职
+> 📊 **规模判断**：参保人数≥100 人为规模较大，<10 人为小微企业，0 人需警惕
 
 ---
 
@@ -216,45 +224,7 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
   - 立案日期 - 立案日期
   - 发布日期 - 发布日期
 
-> ⚠️ **一票否决**：有任何当前有效的失信记录，直接列为红色风险，建议终止合作
-
----
-
-#### `get_judgment_debtor_info` — 被执行人 ⚠️
-
-**用途**：查询企业作为被执行人的案件信息
-
-**参数**: 
-- `searchKey`(必填) - 企业名称或统一社会信用代码
-
-**返回关键字段**：
-- caseCode - 案号
-- executor - 被执行人
-- executionCourt - 执行法院
-- executionAmount - 执行标的（金额）
-- filingDate - 立案日期
-- caseStatus - 案件状态（执行中/已结案）
-
-> ⚠️ **风险判定**：执行标的≥100 万 或 案件数量≥3 件，列为橙色风险
-
----
-
-#### `get_serious_violation` — 严重违法 ⛔
-
-**用途**：查询企业是否被列入严重违法失信名单
-
-**参数**: 
-- `searchKey`(必填) - 企业名称或统一社会信用代码
-
-**返回关键字段**：
-- 企业名称 - 被查询企业名称
-- 摘要 - 记录总数和最近列入日期
-- 严重违法信息[] - 严重违法明细列表
-  - 列入日期 - 列入日期
-  - 列入决定机关 (列入) - 列入决定机关
-  - 列入严重违法失信企业名单原因 - 列入原因
-
-> ⚠️ **一票否决**：有任何严重违法记录，直接列为红色风险
+> ⚠️ **一票否决**：有任何当前有效的失信记录，直接列为红色风险，建议避免入职
 
 ---
 
@@ -273,7 +243,56 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
   - 作出决定机关 (列入) - 作出决定机关
   - 列入经营异常名录原因 - 列入原因（未年报/地址失联等）
 
-> ⚠️ **风险判定**：未移出的经营异常列为橙色风险，已移出的列为黄色风险
+> ⚠️ **风险判定**：未移出的经营异常列为红色风险，已移出的列为橙色风险
+
+---
+
+#### `get_serious_violation` — 严重违法 ⛔
+
+**用途**：查询企业是否被列入严重违法失信名单
+
+**参数**: 
+- `searchKey`(必填) - 企业名称或统一社会信用代码
+
+**返回关键字段**：
+- 企业名称 - 被查询企业名称
+- 摘要 - 记录总数和最近列入日期
+- 严重违法信息[] - 严重违法明细列表
+  - 列入日期 - 列入日期
+  - 列入决定机关 (列入) - 列入决定机关
+  - 列入严重违法失信企业名单原因 - 列入原因
+
+> ⚠️ **一票否决**：有任何严重违法记录，直接列为红色风险，建议避免入职
+
+---
+
+#### `get_service_announcement` — 劳动仲裁 ⚠️
+
+**用途**：查询企业涉及的劳动仲裁开庭公告和送达公告
+
+**参数**: 
+- `searchKey`(必填) - 企业名称或统一社会信用代码
+
+**返回关键字段**：
+- 企业名称 - 被查询企业名称
+- 摘要 - 数据说明
+- 劳动仲裁信息 - 劳动仲裁信息
+  - 开庭公告[] - 开庭公告列表
+    - 案号 - 仲裁案号
+    - 申请人[] - 申请人列表
+    - 被申请人[] - 被申请人列表
+    - 主案由 - 主案由
+    - 发布机构 - 发布机构
+    - 开庭日期 - 开庭日期
+  - 送达公告[] - 送达公告列表
+    - 案号 - 案号
+    - 申请人[] - 申请人列表
+    - 被申请人[] - 被申请人列表
+    - 发布日期 - 发布日期
+
+> ⚠️ **劳动纠纷判定**：
+> - 劳动仲裁≥5 件 → 橙色风险（可能存在用工问题）
+> - 劳动仲裁≥10 件 → 红色风险（严重用工风险）
 
 ---
 
@@ -295,32 +314,16 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
   - 处罚日期 - 处罚日期
 
 > ⚠️ **风险判定**：
-> - 单笔罚款≥50 万 或 环保/安全/质量/税务重大处罚 → 红色风险
-> - 单笔罚款 10-50 万 → 橙色风险
-> - 单笔罚款<10 万且 2 年内仅 1 次 → 黄色风险
+> - 近 2 年内处罚≥3 次 → 橙色风险
+> - 近 2 年内重大处罚（≥50 万） → 橙色风险
 
 ---
 
 ### 2. 基础信息工具
 
-#### `get_company_profile` — 企业简介
-
-**用途**：查询企业简介信息，了解业务概况
-
-**参数**: 
-- `searchKey`(必填) - 企业名称或统一社会信用代码
-
-**返回关键字段**：
-- 企业名称 - 企业名称
-- 简介 - 企业简介（业务范围、发展历程等）
-
-> 📊 **分析要点**：了解主营业务、企业规模、行业定位
-
----
-
 #### `get_annual_reports` — 企业年报
 
-**用途**：查询企业企业年报，了解经营情况和参保人数
+**用途**：查询企业企业年报，了解公司规模和经营情况
 
 **参数**: 
 - `searchKey`(必填) - 企业名称或统一社会信用代码
@@ -336,29 +339,25 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
   - 企业基本信息 - 企业基本信息
     - 从业人数 - 从业人数（或"企业选择不公示"）
     - 企业经营状态 - 企业经营状态（开业/存续等）
-    - 是否有对外投资或购买其他公司股权 - 是否有对外投资
   - 股东（发起人）及出资信息[] - 股东信息
-    - 股东（发起人）名称 - 股东名称
-    - 认缴出资额 - 认缴出资额（万元）
-    - 实缴出资额 - 实缴出资额（万元）
-    - 认缴出资时间 - 认缴出资时间
-    - 实缴出资时间 - 实缴出资时间
   - 股权变更信息[] - 股权变更记录（如有）
-    - 股东 - 股东名称
-    - 变更前股权比例 - 变更前比例
-    - 变更后股权比例 - 变更后比例
+  - 社保信息 - 社保信息
+    - 城镇职工基本养老保险 - 参保人数
 
-> 📊 **分析要点**：
-> - 参保人数：判断企业规模（461 人为中型企业）
-> - 股东变更：本年度是否发生股东股权转让
-> - 对外投资：是否有对外投资或购买其他公司股权
-> - 社保信息：城镇职工基本养老保险缴纳人数
+> 📊 **规模判断**：
+> - 参保人数≥100 人 → 规模较大
+> - 参保人数 10-100 人 → 中等规模
+> - 参保人数<10 人 → 小微企业
+> - 参保人数为 0 → 需警惕（可能是空壳）
+> 📊 **经营判断**：
+> - 本年度是否发生股东股权转让：是 → 可能有股权变动
+> - 是否有对外投资或购买其他公司股权：是 → 有对外投资
 
 ---
 
 #### `get_shareholder_info` — 股东信息
 
-**用途**：查询企业股东构成信息，分析股权结构
+**用途**：查询企业股东构成信息
 
 **参数**: 
 - `searchKey`(必填) - 企业名称或统一社会信用代码
@@ -371,7 +370,7 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
   - 持股比例 - 持股比例（百分比）
   - 持股数 - 持股数（股数）
 
-> 📊 **分析要点**：关注股权集中度（前两大股东持股比例）、实际控制人、股东背景
+> 📊 **分析要点**：关注股东背景（国资/上市公司/知名机构为优）、股权集中度
 
 ---
 
@@ -390,7 +389,22 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
   - 职务 - 职务（董事长/经理/董事等）
   - 持股比例 - 持股比例（如有）
 
-> 📊 **分析要点**：关注法定代表人、董事长、经理等核心人员，以及持股比例
+> 📊 **分析要点**：关注法定代表人、董事长、经理等核心人员，以及是否持有股份
+
+---
+
+#### `get_company_profile` — 企业简介
+
+**用途**：查询企业简介信息
+
+**参数**: 
+- `searchKey`(必填) - 企业名称或统一社会信用代码
+
+**返回关键字段**：
+- 企业名称 - 企业名称
+- 简介 - 企业简介（业务范围、发展历程、团队介绍等）
+
+> 📊 **分析要点**：了解主营业务、企业规模、行业定位、企业文化
 
 ---
 
@@ -398,7 +412,7 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
 
 #### `get_financing_records` — 融资信息
 
-**用途**：查询企业融资历史，分析成长轨迹
+**用途**：查询企业融资历史，了解发展潜力
 
 **参数**: 
 - `searchKey`(必填) - 企业名称或统一社会信用代码
@@ -414,10 +428,10 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
     - 投资方[] - 投资方列表
     - 关联机构[] - 关联机构列表
 
-> 📊 **分析要点**：
-> - 融资轮次：轮次越靠后说明企业越成熟（D 轮+为后期）
+> 📊 **发展潜力**：
+> - 融资轮次：D 轮+为后期企业，较成熟
 > - 投资方背景：知名机构投资说明市场认可度高
-> - 融资金额：反映企业估值和资金实力
+> - 最近融资时间：1 年内有融资说明资金充足
 
 ---
 
@@ -439,10 +453,10 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
   - 来源 - 新闻来源
   - 链接 - 新闻链接
 
-> 📊 **分析要点**：
-> - 情感类型分布：积极舆情多为正面，消极舆情需关注
+> 📊 **舆情分析**：
+> - 积极舆情：获奖/融资/扩张等正面新闻
+> - 消极舆情：欠薪/裁员/纠纷/处罚等需警惕
 > - 发布时间：近期舆情更重要
-> - 负面新闻：欠薪/裁员/纠纷/处罚等需警惕
 
 ---
 
@@ -465,10 +479,10 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
   - 经验 - 经验要求
   - 办公地点 - 工作地点
 
-> 📊 **分析要点**：
+> 📊 **人才需求分析**：
 > - 招聘规模：大量招聘可能是业务扩张或人员流动大
 > - 薪资水平：反映企业实力和人才吸引力
-> - 职位类型：技术岗/销售岗/管理岗比例反映业务重点
+> - 职位类型：技术岗/销售岗比例反映业务重点
 
 ---
 
@@ -490,7 +504,7 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
   - 发布日期 - 发布日期
   - 发布单位 - 发布单位
 
-> 📊 **分析要点**：
+> 📊 **荣誉资质分析**：
 > - 高新技术企业：说明有技术研发实力
 > - 独角兽企业：说明估值高、成长快
 > - 级别：国家级>省级>市级
@@ -500,24 +514,24 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
 
 ## 输出报告格式
 
-### 快速风险排查报告（标准模板）
+### 求职公司调查报告（标准模板）
 
 ```markdown
-# 企业快速风险排查报告
+# 求职公司调查报告
 
 ## ⚠️ 风险速览（首屏展示）
 
 | 项目 | 结果 |
 |-----|------|
 | **风险等级** | 🟢 低风险 / 🟡 中风险 / 🔴 高风险 |
+| **登记状态** | 存续/在业/注销/吊销 |
 | **失信记录** | 有/无 |
-| **被执行** | 有/无（金额） |
-| **严重违法** | 有/无 |
 | **经营异常** | 有/无 |
-| **行政处罚** | X 次（最高罚款 XX 万） |
-| **合作建议** | ✅ 推荐 / ⚠️ 谨慎 / ❌ 不推荐 |
+| **劳动仲裁** | X 件 |
+| **参保人数** | X 人 |
+| **入职建议** | ✅ 推荐 / ⚠️ 谨慎 / ❌ 不推荐 |
 
-## 一、企业基本情况
+## 一、公司基本情况
 
 - **企业名称**：XXX
 - **统一社会信用代码**：XXX
@@ -526,6 +540,8 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
 - **成立日期**：XXX
 - **登记状态**：XXX（存续/在业为正常）
 - **企业类型**：XXX
+- **注册地址**：XXX
+- **经营范围**：XXX
 
 ## 二、风险详情
 
@@ -538,30 +554,75 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
 ### 2.3 黄色风险 ⚡
 [逐项说明，如无则写"无"]
 
-## 三、股权结构
+## 三、规模与实力
 
+### 3.1 参保人数（最新年报）
+| 年度 | 参保人数 | 趋势 |
+|-----|---------|------|
+| 2024 | XX 人    | ↑/↓  |
+| 2023 | XX 人    |      |
+
+### 3.2 股东信息
 | 股东名称 | 持股比例 | 股东类型 |
 |---------|---------|---------|
 | XXX     | XX%     | 自然人/企业 |
 
-### 实际控制人
-[穿透分析至最终控制人]
+### 3.3 核心团队
+| 姓名 | 职务 |
+|-----|------|
+| XXX  | 法定代表人/执行董事 |
 
-## 四、综合评价
+## 四、劳动纠纷
 
-### 优势
-1. [如成立时间长、注册资本高、无重大风险等]
+### 4.1 劳动仲裁案件
+| 案号 | 申请人 | 日期 | 状态 |
+|-----|-------|------|------|
+| XXX  | XXX   | XXXX | 已结案/审理中 |
 
-### 风险点
+### 4.2 劳动风险评估
+[综合评估劳动纠纷风险]
+
+## 五、发展潜力
+
+### 5.1 融资信息（如有）
+| 轮次 | 金额 | 日期 | 投资方 |
+|-----|------|------|-------|
+| A 轮 | XX 万 | XXXX | XX 资本 |
+
+### 5.2 新闻舆情分析
+[正面/负面新闻舆情分析]
+
+## 六、综合评价
+
+### 6.1 公司优势
+1. [如成立时间长、规模较大、有融资记录等]
+2. [股东背景强、无重大风险等]
+
+### 6.2 风险点
 1. [列出发现的风险]
+2. [如劳动仲裁多、经营异常等]
 
-### 建议
-[明确给出推荐/谨慎/不推荐的结论和理由]
+### 6.3 入职建议
+
+**✅ 推荐入职**：
+- 公司存续正常，无重大风险
+- 规模稳定，有一定实力
+- 劳动纠纷少，用工规范
+
+**⚠️ 谨慎考虑**：
+- 存在轻微风险（如少量处罚/纠纷）
+- 规模较小或参保人数为 0
+- 建议面试时详细了解
+
+**❌ 不建议入职**：
+- 存在失信/严重违法/经营异常
+- 劳动仲裁频发（≥5 件）
+- 登记状态异常（注销/吊销/清算）
 
 ---
 **数据截至**：YYYY-MM-DD HH:mm:ss
 **数据来源**：企查查
-**免责声明**：本报告仅供参考，不构成投资或合作建议
+**免责声明**：本报告仅供参考，不构成求职建议
 ```
 
 ---
@@ -571,61 +632,70 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
 ```bash
 # 风险查询工具 (risk-server)
 mcporter call risk-server get_dishonest_info --args '{"searchKey": "企业名称"}'
-mcporter call risk-server get_judgment_debtor_info --args '{"searchKey": "企业名称"}'
-mcporter call risk-server get_serious_violation --args '{"searchKey": "企业名称"}'
 mcporter call risk-server get_business_exception --args '{"searchKey": "企业名称"}'
+mcporter call risk-server get_serious_violation --args '{"searchKey": "企业名称"}'
+mcporter call risk-server get_service_announcement --args '{"searchKey": "企业名称"}'
 mcporter call risk-server get_administrative_penalty --args '{"searchKey": "企业名称"}'
 
 # 基础信息工具 (company-server)
 mcporter call company-server get_company_registration_info --args '{"searchKey": "企业名称"}'
+mcporter call company-server get_annual_reports --args '{"searchKey": "企业名称"}'
 mcporter call company-server get_shareholder_info --args '{"searchKey": "企业名称"}'
 mcporter call company-server get_key_personnel --args '{"searchKey": "企业名称"}'
+mcporter call company-server get_company_profile --args '{"searchKey": "企业名称"}'
+
+# 扩展工具 (operation-server，可选)
+mcporter call operation-server get_financing_records --args '{"searchKey": "企业名称"}'
+mcporter call operation-server get_news_sentiment --args '{"searchKey": "企业名称"}'
+mcporter call operation-server get_recruitment_info --args '{"searchKey": "企业名称"}'
 ```
 
 ---
 
 ## 完整工作流程示例
 
-### 用户：帮我查一下"XXX 公司"靠不靠谱，能不能合作
+### 用户：我收到 XXX 公司的 Offer，帮我查一下这家公司靠不靠谱
 
 **步骤 1：确认 API Key**
 - 检查是否有 QCC_AGENT_API_KEY 环境变量
 - 如无，引导用户访问 https://agent.qcc.com 获取
 
-**步骤 2：并行查询 8 个核心工具**
+**步骤 2：并行查询 10 个核心工具**
 
 风险 5 项（risk-server）：
 - get_dishonest_info
-- get_judgment_debtor_info
-- get_serious_violation
 - get_business_exception
+- get_serious_violation
+- get_service_announcement
 - get_administrative_penalty
 
-基础 3 项（company-server）：
+基础 5 项（company-server）：
 - get_company_registration_info
+- get_annual_reports
 - get_shareholder_info
 - get_key_personnel
+- get_company_profile
 
 **步骤 3：风险判定**
-- 检查是否有红色风险（失信/严重违法/吊销）
-- 如有，立即预警用户
-- 计算风险评分
+- 检查是否有红色风险（失信/严重违法/经营异常）
+- 评估劳动纠纷风险
+- 分析公司规模和实力
 
 **步骤 4：输出报告**
 - 按标准模板输出
-- 首屏展示风险速览
-- 给出明确合作建议
+- 首屏展示风险等级和入职建议
+- 给出明确的推荐/谨慎/不推荐结论
 
 **步骤 5：询问用户**
-- 是否需要查询更多维度信息（如知识产权、融资信息、招投标等）
-- 如需，可调用更多企查查 MCP 工具进行深度调查
+- 是否需要查询更多维度信息（如融资信息、新闻舆情等）
+- 如需，可调用扩展工具进行深度调查
 
 ---
 
 ## 注意事项
 
 1. **数据时效性**：告知用户数据截至查询日期，建议定期复查
-2. **信息核实**：重要信息建议通过多源验证
+2. **信息核实**：重要信息建议通过多源验证（如面试时确认）
 3. **风险提示**：发现红色风险必须明确提示
 4. **建议明确**：必须给出推荐/谨慎/不推荐的结论
-5. **边界清晰**：快速排查仅覆盖 8 个核心指标，如需深度调查可扩展查询更多维度
+5. **隐私保护**：报告仅供个人求职参考，不得外传

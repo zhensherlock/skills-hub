@@ -98,8 +98,8 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
 - `get_environmental_penalty` (risk-server) — 环保处罚
 
 **资产完整性：**
-- `get_company_registration_info` (company-server) — 工商登记
-- `get_annual_reports` (company-server) — 年报信息
+- `get_company_registration_info` (company-server) — 企业工商信息
+- `get_annual_reports` (company-server) — 企业年报
 - `get_patent_info` (ipr-server) — 专利
 - `get_trademark_info` (ipr-server) — 商标
 - `get_software_copyright_info` (ipr-server) — 软件著作权
@@ -108,7 +108,7 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
 
 **Tier 2 - 扩展查询（根据交易规模）：**
 - `get_bidding_info` (operation-server) — 招投标（业务持续性）
-- `get_news_sentiment` (operation-server) — 舆情（声誉风险）
+- `get_news_sentiment` (operation-server) — 新闻舆情（声誉风险）
 - `get_recruitment_info` (operation-server) — 招聘（人员稳定性）
 
 ### 并购风险判定标准

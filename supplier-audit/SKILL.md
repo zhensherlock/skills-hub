@@ -87,7 +87,7 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
 - `get_judgment_debtor_info` (risk-server) — 被执行人（债务风险）
 
 **基础信息：**
-- `get_company_registration_info` (company-server) — 工商登记
+- `get_company_registration_info` (company-server) — 企业工商信息
 - `get_shareholder_info` (company-server) — 股东信息
 - `get_key_personnel` (company-server) — 主要人员
 
@@ -233,7 +233,7 @@ mcporter call company-server get_company_registration_info --args '{"searchKey":
 
 ### 3. 基础信息工具
 
-#### `get_company_registration_info` — 工商登记
+#### `get_company_registration_info` — 企业工商信息
 
 **参数**: `searchKey` - 企业名称或统一社会信用代码
 
